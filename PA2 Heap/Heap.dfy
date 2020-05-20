@@ -113,14 +113,15 @@ method extract(h: Heap) returns (x: int, h': Heap)
 	var pivot := a[h.size];
 	var place := 1;
 	//如果儿子有比自己大的，就往最大的儿子传导，注意考虑边界情况
-  	while((place * 2 < h.size && a[place * 2] > pivot) || (place * 2 + 1 < h.size && a[place * 2 + 1] > pivot))
+  	while((place * 2 < h.size && a[place * 2] >= pivot) || (place * 2 + 1 < h.size && a[place * 2 + 1] >= pivot))
 	invariant 1 <= place < h.size //不越界
 	invariant forall i :: 1 < i < h.size ==> a[i] <= a[i / 2] //除了place之外都符合堆性质
 	invariant forall i :: 1 <= i <= h.size ==> a[i] <= x
+	invariant a[place] >= pivot
 	decreases h.size - place * 2
 	{
 		//左儿子比自己大，而且是更大的儿子（右儿子小或者越界）
-    	if (place * 2 < h.size && a[place * 2] > pivot && (place * 2 + 1 >= h.size || a[place * 2] >= a[place * 2 + 1]))
+    	if (place * 2 < h.size && a[place * 2] >= pivot && (place * 2 + 1 >= h.size || a[place * 2] >= a[place * 2 + 1]))
 		{
 			assert a[place*2] <= a[(place*2) / 2]; 
       		a[place] := a[place * 2];
@@ -129,7 +130,7 @@ method extract(h: Heap) returns (x: int, h': Heap)
     	else
 		{
 			//右儿子更大且没有越界
-      		if (place * 2 + 1 < h.size && a[place * 2 + 1] > pivot && a[place * 2 + 1] > a[place * 2])
+      		if (place * 2 + 1 < h.size && a[place * 2 + 1] >= pivot && a[place * 2 + 1] > a[place * 2])
 			{
 				assert a[place*2 + 1] <= a[(place*2 + 1) / 2]; 
         		a[place] := a[place * 2 + 1];
@@ -143,6 +144,10 @@ method extract(h: Heap) returns (x: int, h': Heap)
 			}
 		}
 	}
+	//更新儿子
+	assert forall i :: 1 < i < h.size && place == i / 2 ==> pivot >= a[i];
+	a[place] := pivot;
+
     h' := H(a, h.size - 1, h.capacity);
 }
 
